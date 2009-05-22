@@ -1,0 +1,89 @@
+<cruisecontrol>
+
+	<property name="buildmaster.email" value="don.branson@gmail.com" />
+	<property name="buildmaster.name" value="BuildMaster" />
+
+	<property name="installdir" value="../cruisecontrol" />
+	<property name="workdir" value="." />
+
+	<property name="project.root" value="${workdir}/checkout/${project.name}" />
+	<property name="testdir" value="${project.root}/junit-reports/" />
+	<property name="logdir" value="${workdir}/logs/${project.name}" />
+	<property name="artifacts.dir" value="${workdir}/artifacts/" />
+
+	<plugin name="htmlemail" buildresultsurl="http://dev1:8080/cruisecontrol/buildresults/${project.name}"
+		mailhost="localhost" returnaddress="${buildmaster.email}" returnname="${buildmaster.name}"
+		subjectprefix="[BUILD ${project.name}]" xsldir="${installdir}/webapps/cruisecontrol/xsl"
+		css="${installdir}/webapps/cruisecontrol/css/cruisecontrol.css" />
+
+	<plugin name="project.donsproxy" classname="net.sourceforge.cruisecontrol.ProjectConfig" buildafterfailed="false">
+
+		<listeners>
+			<currentbuildstatuslistener file="${logdir}/status.txt" />
+		</listeners>
+
+		<bootstrappers>
+			<svnbootstrapper localWorkingCopy="${project.root}" />
+		</bootstrappers>
+
+		<modificationset quietperiod="60">
+			<svn localWorkingCopy="${project.root}" />
+		</modificationset>
+
+		<log dir="${logdir}">
+			<merge dir="${testdir}" />
+		</log>
+
+		<schedule>
+			<ant antWorkingDir="${project.root}" target="cruise" />
+		</schedule>
+
+		<publishers>
+			<artifactspublisher dir="${project.root}/dist" dest="${artifacts.dir}/${project.name}" />
+			<htmlemail>
+				<always address="${buildmaster.email}" />
+				<map alias="don" address="don.branson@gmail.com" />
+			</htmlemail>
+		</publishers>
+
+	</plugin>
+
+	<plugin name="project.other" classname="net.sourceforge.cruisecontrol.ProjectConfig" buildafterfailed="false">
+
+		<listeners>
+			<currentbuildstatuslistener file="${logdir}/buildstatus.html" />
+		</listeners>
+
+		<bootstrappers>
+			<svnbootstrapper localWorkingCopy="${project.root}" />
+		</bootstrappers>
+
+		<modificationset quietperiod="60">
+			<svn localWorkingCopy="${project.root}" />
+		</modificationset>
+
+		<log dir="${logdir}">
+			<merge dir="${testdir}" />
+		</log>
+
+		<schedule>
+			<ant antWorkingDir="${project.root}" target="cruise" />
+		</schedule>
+
+		<publishers>
+			<artifactspublisher dir="${project.root}/dist" dest="${artifacts.dir}/${project.name}" />
+			<htmlemail>
+				<always address="${buildmaster.email}" />
+				<map alias="don" address="don.branson@gmail.com" />
+			</htmlemail>
+		</publishers>
+
+	</plugin>
+
+	<project.donsproxy name="DonsProxy" />
+<!--
+	<project.other     name="SnarfNOAA" />
+	<project.other     name="EarthquakeService" />
+-->
+
+</cruisecontrol>
